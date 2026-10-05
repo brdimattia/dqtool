@@ -44,8 +44,17 @@ class DetectConfig(Strict):
 
 
 class ProveConfig(Strict):
-    # Rules flagging more than this share of rows are dropped as noisy (used in step 4).
+    # Rules flagging more than this share of rows are dropped as noisy.
     max_violation_rate: float = 0.01
+    # ...but a rule flagging at most this many rows is never noisy, so a precise rule on a
+    # small table (5 misspelled names in a 265-row lookup is 1.9%) is not dropped.
+    noise_min_rows: int = 10
+    # A rule is a period rule when this share of its flagged rows falls in one time period.
+    # Period rules (drift) flag whole periods by design, so the noise threshold does not apply.
+    period_rule_min_share: float = 0.95
+    # Backtest sandbox limits, per rule.
+    timeout_seconds: float = 60.0
+    memory_limit: str = "4GB"
 
 
 class TierConfig(Strict):

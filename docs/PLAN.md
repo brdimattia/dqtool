@@ -104,10 +104,18 @@ Findings:
 
 ### Step 4: Prove and score
 
-- [ ] Backtester: run each rule on the full data in a read-only, resource-limited connection
-- [ ] Drop rules that fail to run or flag more than the noise threshold
-- [ ] Scoring against the manifest: planted recall, cost per scan
-- [ ] Results file per run, comparable across runs
+- [x] Backtester sandbox: fresh DuckDB connection that can read only the source files,
+      with external access and extension loading off, settings locked, a memory limit,
+      and a per-rule timeout
+- [x] Drop rules that fail to run, or flag more than 1% of rows and more than 10 rows (the
+      row floor keeps precise rules on small tables); SQL guard re-checked before running
+- [x] Period rules (95% of flags in one period) are exempt from the noise threshold
+- [x] Scoring against the manifest: recall by type (spec metric) and by plant, mean plant
+      recall, rules hitting plants vs other findings, cost against budget
+- [x] `results.json` per run, plus `runs/results.jsonl` history for comparing runs
+- [x] `dqtool prove RUN_DIR`: re-run backtests and scoring with no LLM calls
+- [x] Current result (Sonnet single pass, prompt v2): recall by type 100% (target 90%),
+      by plant 60%, 20 of 20 rules surviving, $0.34 per scan
 
 ### Step 5: Review
 
@@ -116,15 +124,18 @@ Findings:
 - [ ] Static HTML report with summary, findings, and rules layers
 - [ ] Pull request opened per scan
 
-### Open questions from step 1
+### Open questions
 
-- [ ] The 1% noise threshold would drop correct rules on common real errors (for example
-      `fare_amount < 0` matches 4.8% of rows). Decide before step 4.
-- [ ] How step 4 decides drift "was caught" (the plant is a whole month, not a set of rows).
-- [ ] Whether semantic and canary plants are scored on the zone table or the joined trips.
-- [ ] Recall by type (spec: 5 types) or by plant (10 plants).
-- [ ] Period rules (drift) flag a whole period, far above the 1% noise threshold. Exempt
-      them, or score drift as a finding rather than a row rule.
+- [x] How drift is scored: caught when one surviving rule puts at least 90% of its flags in
+      the planted month and flags at least 10% of that month's rows.
+- [x] Recall by type or by plant: both are reported; by type is the headline (spec).
+- [x] Period rules vs the 1% noise threshold: period rules are exempt.
+- [x] Noise threshold on small tables: rules flagging 10 rows or fewer are never noisy.
+- [ ] Common real errors vs the noise threshold: a correct rule like `fare_amount < 0`
+      (4.8% of rows) would be dropped. Decide whether such rules are dropped, kept as
+      `warn`, or split (detector backlog).
+- [ ] Planted negative fares are invisible to sample-based review (107 among 535k real
+      refunds). Either split slices by signature or make the plant distinguishable.
 
 ## Phase 1: Understand
 

@@ -15,7 +15,12 @@ detect:
   sample_rows: 20                # evidence row_ids kept per slice
 
 prove:
-  max_violation_rate: 0.01       # rules flagging more than this are dropped as noisy (step 4)
+  max_violation_rate: 0.01       # rules flagging more than this are dropped as noisy...
+  noise_min_rows: 10             # ...unless they flag at most this many rows (small tables)
+  period_rule_min_share: 0.95    # rules this concentrated in one period are period rules,
+                                 # exempt from the noise threshold (drift)
+  timeout_seconds: 60.0          # backtest limit per rule
+  memory_limit: 4GB              # backtest sandbox memory limit
 
 propose:
   enabled: true

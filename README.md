@@ -8,8 +8,9 @@ Placeholder name. See [docs/SPEC.md](docs/SPEC.md) for the design and [docs/PLAN
 uv sync
 uv run python scripts/download_data.py            # 2025-01..03 yellow trips + zone lookup -> data/raw/
 uv run python scripts/plant_errors.py --seed 42   # -> data/planted/ (+ manifest.json)
-uv run dqtool scan --manifest data/planted/manifest.json   # profile, detect, propose -> runs/<run_id>/
+uv run dqtool scan --manifest data/planted/manifest.json   # profile, detect, propose, prove, score
 uv run dqtool scan --no-propose                            # deterministic only, no LLM calls
+uv run dqtool prove runs/<run_id> --manifest data/planted/manifest.json  # re-score, no LLM
 uv run pytest
 uv run ruff check . && uv run ruff format --check .
 ```

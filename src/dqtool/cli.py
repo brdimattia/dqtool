@@ -9,7 +9,7 @@ from typing import Annotated
 import typer
 
 from dqtool.config import SourceConfig, load_config, load_dotenv
-from dqtool.scan import ScanResult, run_scan
+from dqtool.scan import ScanResult, reprove, run_scan
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 
@@ -89,7 +89,55 @@ def scan(
         )
     if result.proposals is not None:
         print_proposals(result)
+    if result.rules is not None:
+        print_rules(result.rules, result.results)
     typer.echo(f"\nWrote {result.run_dir}")
+
+
+@app.command(name="prove")
+def prove_cmd(
+    run_dir: Annotated[Path, typer.Argument(help="An earlier run directory, e.g. runs/<run_id>.")],
+    manifest: Annotated[
+        Path | None, typer.Option(help="Planted-error manifest to score against.")
+    ] = None,
+) -> None:
+    """Re-run Prove (backtests) and scoring on an earlier run's proposals. No LLM calls."""
+    rules, results = reprove(run_dir, manifest)
+    print_rules(rules, results)
+    typer.echo(f"\nUpdated {run_dir}")
+
+
+def print_rules(rules: list[dict], results: dict | None) -> None:
+    typer.echo("\nBacktest:")
+    for r in rules:
+        ev = r["evidence"]
+        rate = ev.get("backtest_violation_rate")
+        detail = f"{rate:8.4%}" if rate is not None else "       -"
+        if ev.get("kind") == "period":
+            detail += f"  period rule ({ev['period']})"
+        if ev.get("error"):
+            detail += f"  {ev['error'][:60]}"
+        typer.echo(f"  {r['status']:<22} {r['id']:<38} {detail}")
+    if not results:
+        return
+    m = results["metrics"]
+    typer.echo("\nPlanted errors caught by surviving rules:")
+    for p in results["plants"]:
+        mark = "yes" if p["caught"] else "no "
+        first = ", ".join(p["rules"][:2]) or "-"
+        typer.echo(f"  {mark}  {p['plant_id']:<30} {p['recall']:>5.0%}  {first}")
+    targets = results["targets"]
+    typer.echo(
+        f"\nRecall by type: {m['planted_recall_by_type']:.0%}"
+        f" (target {targets['planted_recall_by_type']['target']:.0%},"
+        f" {'met' if targets['planted_recall_by_type']['met'] else 'not met'});"
+        f" by plant: {m['planted_recall_by_plant']:.0%}"
+    )
+    typer.echo(
+        f"Rules: {m['rules_surviving']} surviving of {m['rules_total']}"
+        f" ({m['rules_hitting_plants']} hit plants, {m['rules_novel_candidates']} other findings);"
+        f" cost ${m['cost_usd']:.4f}"
+    )
 
 
 def print_proposals(result: ScanResult) -> None:
