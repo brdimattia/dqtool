@@ -1,0 +1,46 @@
+id: taxi-misspelled-zone-ids
+source: nyc_taxi_trips
+description: Location IDs whose zone names are misspelled in the lookup (Midtown North 163, Lenox Hill
+  West 141).
+violation_when: PULocationID IN (163, 141) AND DOLocationID IN (163, 141)
+severity: warn
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 0.003393544540796744
+  backtest_violation_count: 38001
+  kind: row
+  sample_row_ids:
+  - 133956
+  - 6414047
+  - 10866527
+  - 3601735
+  - 4942213
+  - 4699145
+  - 1154987
+  - 5461354
+  - 4588083
+  - 5860439
+  - 10490445
+  - 9276403
+  - 9034911
+  - 3823021
+  - 7780683
+  - 10385570
+  - 8981979
+  - 4119962
+  - 3583577
+  - 4737626
+  slice_ids: []
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: medium
+  reasoning: Zone names like 'Mitown North' (163), 'Lenoxx Hill West' (141), 'Melroes South' and 'Bedford
+    Prk' look misspelled versus Midtown North, Lenox Hill West, Melrose South, Bedford Park.
+  approved_by: null

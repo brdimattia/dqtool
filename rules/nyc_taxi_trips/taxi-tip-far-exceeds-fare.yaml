@@ -1,0 +1,46 @@
+id: taxi-tip-far-exceeds-fare
+source: nyc_taxi_trips
+description: Tip above 80 and more than 5 times the fare is implausible.
+violation_when: tip_amount > 80 AND fare_amount > 0 AND tip_amount > 5 * fare_amount
+severity: error
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 1.4288232586707694e-05
+  backtest_violation_count: 160
+  kind: row
+  sample_row_ids:
+  - 2666919
+  - 8620942
+  - 4976612
+  - 4071108
+  - 5560704
+  - 7629690
+  - 8645486
+  - 7625389
+  - 4037647
+  - 6015065
+  - 9256775
+  - 5797954
+  - 1663834
+  - 2256088
+  - 250631
+  - 8273074
+  - 2455243
+  - 344000
+  - 1727059
+  - 1369260
+  slice_ids:
+  - nyc_taxi_trips.robust_outlier.tip_amount.high
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: medium
+  reasoning: Tips of 80-220 on fares of 3-10 (tip_ratio 20-43) or exactly 99.99 are implausible, and there
+    are several on trips lasting seconds with zero distance.
+  approved_by: null

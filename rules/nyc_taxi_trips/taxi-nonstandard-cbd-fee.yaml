@@ -1,0 +1,45 @@
+id: taxi-nonstandard-cbd-fee
+source: nyc_taxi_trips
+description: cbd_congestion_fee above 0.75 is not a standard value.
+violation_when: cbd_congestion_fee > 0.75
+severity: warn
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 1.2323600606035386e-05
+  backtest_violation_count: 138
+  kind: row
+  sample_row_ids:
+  - 11092093
+  - 10421911
+  - 11124391
+  - 10517781
+  - 11069548
+  - 10630556
+  - 11013845
+  - 10980851
+  - 10033837
+  - 10613427
+  - 10445514
+  - 10366514
+  - 10645986
+  - 10922911
+  - 10916607
+  - 10431693
+  - 10538085
+  - 10978263
+  - 10342309
+  - 10932274
+  slice_ids:
+  - nyc_taxi_trips.rare_values.cbd_congestion_fee
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: low
+  reasoning: Values 1.25 and 1.5 are not standard fee levels (0.75), though 139 rows is small.
+  approved_by: null

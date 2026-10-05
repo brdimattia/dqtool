@@ -1,0 +1,45 @@
+id: taxi-negative-implied-mph
+source: nyc_taxi_trips
+description: Negative implied speed results from dropoff before pickup.
+violation_when: implied_mph < 0
+severity: error
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 3.679219891077231e-05
+  backtest_violation_count: 412
+  kind: row
+  sample_row_ids:
+  - 3075040
+  - 2945515
+  - 3419204
+  - 6473382
+  - 10370635
+  - 2946850
+  - 6398342
+  - 280002
+  - 3075902
+  - 6936086
+  - 6350461
+  - 2996995
+  - 6380723
+  - 3088456
+  - 2955342
+  - 212483
+  - 3098465
+  - 10617733
+  - 5684338
+  - 1293021
+  slice_ids:
+  - nyc_taxi_trips.negative_values.implied_mph
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: high
+  reasoning: Negative speeds are the same rows as negative durations, caused by dropoff before pickup.
+  approved_by: null

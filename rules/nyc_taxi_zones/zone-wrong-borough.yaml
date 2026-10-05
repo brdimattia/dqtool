@@ -1,0 +1,28 @@
+id: zone-wrong-borough
+source: nyc_taxi_zones
+description: 'Zones filed under the wrong borough: City Island is in the Bronx, Homecrest is in Brooklyn.'
+violation_when: ("Zone" = 'City Island' AND "Borough" <> 'Bronx') OR ("Zone" = 'Homecrest' AND "Borough"
+  <> 'Brooklyn')
+severity: error
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 0.007547169811320755
+  backtest_violation_count: 2
+  kind: row
+  sample_row_ids:
+  - 46
+  - 123
+  slice_ids: []
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: medium
+  reasoning: City Island (46) is in the Bronx but is labelled Brooklyn. Homecrest (123) is in Brooklyn
+    but is labelled Staten Island. Both are miscategorized.
+  approved_by: null

@@ -1,0 +1,45 @@
+id: taxi-invalid-mta-tax
+source: nyc_taxi_trips
+description: mta_tax above 0.5 is not a valid rate.
+violation_when: mta_tax > 0.5
+severity: error
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 1.794959218705154e-05
+  backtest_violation_count: 201
+  kind: row
+  sample_row_ids:
+  - 6708271
+  - 6763192
+  - 11115150
+  - 3089217
+  - 10837183
+  - 6666250
+  - 11163522
+  - 6662047
+  - 6765791
+  - 6487065
+  - 10578820
+  - 3176168
+  - 3092903
+  - 3205351
+  - 3428432
+  - 10955470
+  - 6954890
+  - 6617490
+  - 3208563
+  - 6700770
+  slice_ids:
+  - nyc_taxi_trips.rare_values.mta_tax
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: medium
+  reasoning: mta_tax values like 10.5, 4.75 or 5.8 are not valid tax rates, which are 0.5 or 0.
+  approved_by: null

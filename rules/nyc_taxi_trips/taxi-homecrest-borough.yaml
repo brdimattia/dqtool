@@ -1,0 +1,46 @@
+id: taxi-homecrest-borough
+source: nyc_taxi_trips
+description: Location 123 (Homecrest) is labeled Staten Island but is in Brooklyn.
+violation_when: DOLocationID = 123 AND trip_distance > 30
+severity: warn
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 2.6879737553743846e-05
+  backtest_violation_count: 301
+  kind: row
+  sample_row_ids:
+  - 8928599
+  - 10192378
+  - 8188250
+  - 9526321
+  - 8446347
+  - 11013523
+  - 9100392
+  - 7984283
+  - 9834225
+  - 7261702
+  - 8230719
+  - 8207374
+  - 7623210
+  - 8872630
+  - 7691627
+  - 11142930
+  - 8822349
+  - 9040303
+  - 8975298
+  - 8178494
+  slice_ids: []
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: low
+  reasoning: 'Several zones appear in the wrong borough: Roosevelt Island under Manhattan is fine, but
+    ''Homecrest'' is under Staten Island (it is in Brooklyn) and ''Manhattan Beach'' is under Brooklyn
+    correctly.'
+  approved_by: null

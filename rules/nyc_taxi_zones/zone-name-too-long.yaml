@@ -1,0 +1,30 @@
+id: zone-name-too-long
+source: nyc_taxi_zones
+description: Zone names over 60 characters are far longer than any real taxi zone name and indicate appended
+  or injected text.
+violation_when: length("Zone") > 60
+severity: warn
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 0.0037735849056603774
+  backtest_violation_count: 1
+  kind: row
+  sample_row_ids:
+  - 192
+  slice_ids:
+  - nyc_taxi_zones.text_length.Zone
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: medium
+  reasoning: Five of the six long names are genuine NYC zone names (Breezy Point/Fort Tilden/Riis Beach,
+    Governor's Island/Ellis Island/Liberty Island x3, Riverdale/North Riverdale/Fieldston). The sixth,
+    LocationID 192, is the injected text and is covered by the instruction slice. A length rule targets
+    only that row.
+  approved_by: null

@@ -1,0 +1,47 @@
+id: taxi-dropoff-before-pickup
+source: nyc_taxi_trips
+description: Dropoff time earlier than pickup time is impossible.
+violation_when: tpep_dropoff_datetime < tpep_pickup_datetime
+severity: error
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 3.706010327177308e-05
+  backtest_violation_count: 415
+  kind: row
+  sample_row_ids:
+  - 3075040
+  - 2945515
+  - 3419204
+  - 6473382
+  - 10370635
+  - 2946850
+  - 6398342
+  - 280002
+  - 3075902
+  - 6936086
+  - 6350461
+  - 2996995
+  - 6380723
+  - 3088456
+  - 2955342
+  - 212483
+  - 3098465
+  - 10617733
+  - 5684338
+  - 1293021
+  slice_ids:
+  - nyc_taxi_trips.negative_values.duration_hours
+  - nyc_taxi_trips.order_violation.tpep_dropoff_datetime_lt_tpep_pickup_datetime
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: high
+  reasoning: Dropoff precedes pickup in 415 rows, many from VendorID 6 with sub-minute negative durations;
+    impossible.
+  approved_by: null
