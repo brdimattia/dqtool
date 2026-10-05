@@ -19,7 +19,7 @@ from dqtool.detect.detectors import Slice
 from dqtool.logging import to_json
 from dqtool.profile.source import Source, quote
 
-PROMPT_VERSION = "v1"
+PROMPT_VERSION = "v2"
 MASK = "<masked>"
 
 

@@ -29,7 +29,10 @@ class SliceReview(Strict):
     )
     confidence: Confidence
     reasoning: str = Field(description="One or two sentences citing the evidence.")
-    rule: Rule | None = Field(description="A rule when verdict is error, otherwise null.")
+    rule: Rule | None = Field(
+        description="A rule when verdict is error; optionally (severity warn) when ambiguous;"
+        " null when legitimate."
+    )
 
 
 class NewIssue(Strict):

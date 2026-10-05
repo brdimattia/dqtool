@@ -20,17 +20,13 @@ prove:
 propose:
   enabled: true
   provider: claude
-  triage:                        # smallest current model: first pass over every slice
-    model: claude-haiku-4-5
-    max_tokens: 16000
-    effort: null
-    fallbacks: null
-  escalate:                      # mid-tier: ambiguous, low-confidence, or multi-column slices
-                                 # (set to null for a single-pass review)
+  triage:                        # reviews every slice (single pass by default)
     model: claude-sonnet-5-5
-    max_tokens: 32000
+    max_tokens: 16000
     effort: medium
     fallbacks: default           # server-side refusal fallback, routed by refusal category
+  escalate: null                 # optional second tier, e.g. {model: claude-sonnet-5-5, ...}
+                                 # under a claude-haiku-4-5 triage; see docs/PLAN.md step 3
   sample_rows: 20                # sample rows per slice in the prompt
   max_value_chars: 200           # each value truncated to this length
   full_table_max_rows: 300       # tables this small are shown in full (lookups)

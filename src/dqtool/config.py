@@ -60,17 +60,17 @@ class TierConfig(Strict):
 class ProposeConfig(Strict):
     enabled: bool = True
     provider: str = "claude"
-    # Smallest current model does first-pass triage.
+    # Reviews every slice. Default is single pass on a mid-tier model: measured on the planted
+    # data, the smallest model's confidence did not track its accuracy, so escalating on its
+    # low-confidence answers never triggered (see docs/PLAN.md, step 3).
     triage: TierConfig = Field(
-        default_factory=lambda: TierConfig(model="claude-haiku-4-5", max_tokens=16000)
-    )
-    # Mid-tier model reviews only slices triage marks ambiguous or low-confidence, or that
-    # span several columns. null turns escalation off (single-pass review).
-    escalate: TierConfig | None = Field(
         default_factory=lambda: TierConfig(
-            model="claude-sonnet-5-5", max_tokens=32000, effort="medium", fallbacks="default"
+            model="claude-sonnet-5-5", max_tokens=16000, effort="medium", fallbacks="default"
         )
     )
+    # Optional second tier for slices the first marks ambiguous or low-confidence, or that span
+    # several columns. null means single-pass review.
+    escalate: TierConfig | None = None
     # Sample rows shown per slice (spec default: 20 per issue).
     sample_rows: int = 20
     # Each value in a prompt is truncated to this many characters.

@@ -351,7 +351,7 @@ def propose_source(
         result["reviews"].append(
             {**review.model_dump(), "model": model, "grouped_with": [s.slice_id for s in g.also]}
         )
-        if review.verdict == "error" and review.rule:
+        if review.verdict in ("error", "ambiguous") and review.rule:
             add_rule(
                 review.rule,
                 model,

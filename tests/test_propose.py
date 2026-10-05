@@ -11,7 +11,7 @@ from test_scan import SYNTHETIC_DETECT, planted_config
 from typer.testing import CliRunner
 
 from dqtool.cli import app
-from dqtool.config import BudgetConfig, ProposeConfig, _default_pricing
+from dqtool.config import BudgetConfig, ProposeConfig, TierConfig, _default_pricing
 from dqtool.propose.prompt import data_rows, escape
 from dqtool.propose.providers.base import LLMRequest, LLMResponse
 from dqtool.safety.sql_guard import check_predicate
@@ -28,7 +28,7 @@ class FakeProvider:
 
     name = "fake"
 
-    def __init__(self, triage_model: str = "claude-haiku-4-5", mode: str = "ok"):
+    def __init__(self, triage_model: str = "claude-sonnet-5-5", mode: str = "ok"):
         self.triage_model = triage_model
         self.mode = mode
         self.requests: list[LLMRequest] = []
@@ -220,9 +220,15 @@ def test_prompt_masks_sensitive_columns_and_joins_lookups(synthetic_planted, tmp
 # --- Engine ------------------------------------------------------------------
 
 
+HAIKU = TierConfig(model="claude-haiku-4-5", max_tokens=16000)
+SONNET = TierConfig(model="claude-sonnet-5-5", max_tokens=16000, effort="medium")
+
+
 def test_triage_then_escalation(synthetic_planted, tmp_path):
-    provider = FakeProvider()
-    result = scan(synthetic_planted, tmp_path, provider)
+    provider = FakeProvider(triage_model="claude-haiku-4-5")
+    result = scan(
+        synthetic_planted, tmp_path, provider, propose__triage=HAIKU, propose__escalate=SONNET
+    )
     tiers = [r.model for r in provider.requests]
     # Trips: triage + escalation (drift is ambiguous, order checks span two columns).
     # Zones: triage only.
@@ -244,7 +250,7 @@ def test_triage_then_escalation(synthetic_planted, tmp_path):
     assert by_id["zone-typo"]["status"] == "proposed"
     assert by_id["bad"]["status"] == "rejected_by_sql_guard"
     for rule in trips["rules"] + zones["rules"]:
-        assert rule["provenance"]["prompt_version"] == "v1"
+        assert rule["provenance"]["prompt_version"] == "v2"
         assert rule["max_violation_rate"] == 0.01
 
     files = {p.name for p in result.run_dir.iterdir()}
@@ -311,7 +317,9 @@ def test_cli_skips_propose_without_api_key(synthetic_planted, tmp_path, monkeypa
     assert "skipping Propose" in result.output
 
 
-def test_escalation_can_be_turned_off(synthetic_planted, tmp_path):
+def test_default_is_single_pass(synthetic_planted, tmp_path):
     provider = FakeProvider()
-    scan(synthetic_planted, tmp_path, provider, propose__escalate=None)
-    assert [r.model for r in provider.requests] == ["claude-haiku-4-5", "claude-haiku-4-5"]
+    result = scan(synthetic_planted, tmp_path, provider)
+    assert [r.model for r in provider.requests] == ["claude-sonnet-5-5", "claude-sonnet-5-5"]
+    # Ambiguous slices (drift, in the fake) keep no rule unless one is offered.
+    assert all(p["escalated"] == [] for p in result.proposals)

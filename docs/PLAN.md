@@ -49,6 +49,8 @@ planted errors. Done when the [Evaluation](SPEC.md#evaluation) targets are met.
       real rows, so the real formula needs research first.
 - [ ] Referential check: trip location ids that are missing from the zone lookup
 - [ ] Drift on categorical value shares, not just medians and null rates
+- [ ] Split large slices by cross-column signature (for example negative fare with a
+      positive total vs everything negated), so small anomalous subsets show up in samples
 
 ### Step 3: Propose
 
@@ -60,15 +62,45 @@ planted errors. Done when the [Evaluation](SPEC.md#evaluation) targets are met.
 - [x] Output schema (pydantic); invalid responses discarded with at most one retry
 - [x] SQL guard (sqlglot): read-only boolean predicate, known columns, allow-listed
       functions and nodes
-- [x] Triage on the smallest model; escalation to the mid tier for ambiguous,
-      low-confidence, or multi-column slices
+- [x] Optional two-tier review (triage plus escalation for ambiguous, low-confidence, or
+      multi-column slices); default is single pass on Sonnet 5.5 (see measurements below)
+- [x] Prompt v2: test a "legitimate" explanation against the flagged rows, write rules for
+      unexplained period shifts, and offer `warn` rules for ambiguous slices
 - [x] Cost controls: skip when quiet, result cache keyed by request hash, per-scan and
       monthly budget caps, cost log in `cost.json` and `log.jsonl`
 - [x] Slices that flag the same rows grouped before prompting
 - [x] Zone names joined into trip samples; small tables (the zone lookup) shown in full
-- [ ] Live run on the real data (waiting on an API key in `.env`)
+- [x] Live runs on the real data (results below)
 - [ ] Batch API mode for non-urgent scans (deferred)
 - [ ] Per-source budget overrides (deferred)
+
+#### Step 3 measurements (one run each, 2026-10-05)
+
+Rules are counted as catching a plant when together they flag at least 90% of its rows or
+zones. One run per configuration, so the numbers are directional.
+
+| Plant | Haiku triage, v1 | Sonnet single pass, v1 | Sonnet single pass, v2 |
+|---|---|---|---|
+| Negative fares | caught | legitimate (refunds) | legitimate (refunds) |
+| 2031 pickups | caught | caught | caught |
+| Passenger count 87 | missed | caught | caught |
+| Dropoff before pickup | caught | caught | caught |
+| 0-mile trips, large fares | caught | 10% | 86% |
+| Tip larger than fare | 1% | 8% | 18% |
+| March distance doubled | "seasonal" | ambiguous, no rule | error; rule flags 38% of March |
+| Misspelled zones | 3 of 5 | 5 of 5 | 5 of 5 |
+| Wrong boroughs | 0 of 3 | 2 of 3 | 2 of 3 |
+| Injection canary | caught | caught | caught |
+| Rules (flagging >1%) | 27 (6) | 13 (2) | 20 (2) |
+| Cost per scan | $0.16 | $0.33 | $0.34 |
+
+Findings:
+
+- Haiku's confidence did not track its accuracy, so escalation never triggered.
+- The remaining misses are mostly structural. A slice's 20 sample rows rarely include
+  planted rows when they are a tiny share of the slice (107 planted negative fares among
+  535k real ones), so the LLM judges the slice by its real majority. Splitting large slices
+  by cross-column signature (detector backlog) should address this better than prompting.
 
 ### Step 4: Prove and score
 
@@ -91,6 +123,8 @@ planted errors. Done when the [Evaluation](SPEC.md#evaluation) targets are met.
 - [ ] How step 4 decides drift "was caught" (the plant is a whole month, not a set of rows).
 - [ ] Whether semantic and canary plants are scored on the zone table or the joined trips.
 - [ ] Recall by type (spec: 5 types) or by plant (10 plants).
+- [ ] Period rules (drift) flag a whole period, far above the 1% noise threshold. Exempt
+      them, or score drift as a finding rather than a row rule.
 
 ## Phase 1: Understand
 
