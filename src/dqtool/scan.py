@@ -17,6 +17,15 @@ from dqtool.detect.detectors import Slice, detect
 from dqtool.logging import RunLog, to_json
 from dqtool.profile.profiler import profile_source
 from dqtool.profile.source import Source, register_source
+from dqtool.propose.engine import (
+    Caller,
+    Ledger,
+    ResultCache,
+    cost_summary,
+    month_spend,
+    propose_source,
+)
+from dqtool.propose.providers.base import Provider
 from dqtool.prove.coverage import coverage
 
 
@@ -28,6 +37,8 @@ class ScanResult:
     profiles: dict[str, dict]
     slices: list[Slice]
     coverage: list[dict] | None = None
+    proposals: list[dict] | None = None
+    cost: dict | None = None
     timings: dict[str, float] = field(default_factory=dict)
 
 
@@ -50,7 +61,9 @@ def run_scan(
     source_names: list[str] | None = None,
     out_dir: Path = Path("runs"),
     manifest_path: Path | None = None,
+    provider: Provider | None = None,
 ) -> ScanResult:
+    """Profile and detect every source; with a provider, also run Propose (LLM)."""
     names = source_names or list(config.sources)
     unknown = [n for n in names if n not in config.sources]
     if unknown:
@@ -107,6 +120,18 @@ def run_scan(
             surfaced=sum(r["surfaced"] for r in result.coverage),
             expected=sum(r["expected"] for r in result.coverage),
         )
+    if provider is not None:
+        ledger = Ledger(config, month_spent=month_spend(out_dir, run_id[:6]))
+        cache = ResultCache(out_dir / ".llm_cache" if config.propose.cache else None)
+        caller = Caller(provider, ledger, cache, log)
+        result.proposals = [
+            propose_source(con, sources[name], profiles[name], slices, sources, config, caller)
+            for name in names
+        ]
+        result.cost = cost_summary(ledger)
+        write_json(run_dir / "proposals.json", result.proposals)
+        write_json(run_dir / "cost.json", result.cost)
+        log.event("budget", spent_usd=ledger.spent, skipped=len(ledger.skipped))
     con.close()
     log.event("run_end", slices=len(slices))
     return result

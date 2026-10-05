@@ -52,16 +52,23 @@ planted errors. Done when the [Evaluation](SPEC.md#evaluation) targets are met.
 
 ### Step 3: Propose
 
-- [ ] Provider interface: prompt in, validated JSON out
-- [ ] Claude implementation, model tiers from config
-- [ ] Versioned prompt templates; samples in delimited, escaped blocks
-- [ ] Output schema (pydantic), at most one retry
-- [ ] SQL safety parser (sqlglot): read-only boolean predicate, known columns, allow-listed
-      functions
-- [ ] Cost controls: skip when quiet, fingerprint cache, budget cap, cost log
-- [ ] Rank and group slices before prompting (step 2 yields about 50 per scan on real data,
-      many of them real but legitimate, and several that repeat one cause)
-- [ ] Zone names joined into trip samples, so the canary reaches the prompt path
+- [x] Provider interface: prompt in, validated JSON out (`propose/providers/base.py`)
+- [x] Claude implementation: structured outputs, streaming, refusal fallback (`"default"`)
+      on the mid tier, model tiers and prices from config
+- [x] Versioned prompt templates (`system_v1.md`); samples in delimited, escaped,
+      truncated blocks; sensitive columns masked
+- [x] Output schema (pydantic); invalid responses discarded with at most one retry
+- [x] SQL guard (sqlglot): read-only boolean predicate, known columns, allow-listed
+      functions and nodes
+- [x] Triage on the smallest model; escalation to the mid tier for ambiguous,
+      low-confidence, or multi-column slices
+- [x] Cost controls: skip when quiet, result cache keyed by request hash, per-scan and
+      monthly budget caps, cost log in `cost.json` and `log.jsonl`
+- [x] Slices that flag the same rows grouped before prompting
+- [x] Zone names joined into trip samples; small tables (the zone lookup) shown in full
+- [ ] Live run on the real data (waiting on an API key in `.env`)
+- [ ] Batch API mode for non-urgent scans (deferred)
+- [ ] Per-source budget overrides (deferred)
 
 ### Step 4: Prove and score
 
@@ -73,6 +80,7 @@ planted errors. Done when the [Evaluation](SPEC.md#evaluation) targets are met.
 ### Step 5: Review
 
 - [ ] Rule YAML writer (spec rule format)
+- [ ] Feedback memory: rejected rules and reasons fed into the next prompt
 - [ ] Static HTML report with summary, findings, and rules layers
 - [ ] Pull request opened per scan
 

@@ -17,6 +17,34 @@ detect:
 prove:
   max_violation_rate: 0.01       # rules flagging more than this are dropped as noisy (step 4)
 
+propose:
+  enabled: true
+  provider: claude
+  triage:                        # smallest current model: first pass over every slice
+    model: claude-haiku-4-5
+    max_tokens: 16000
+    effort: null
+    fallbacks: null
+  escalate:                      # mid-tier: ambiguous, low-confidence, or multi-column slices
+    model: claude-sonnet-5-5
+    max_tokens: 32000
+    effort: medium
+    fallbacks: default           # server-side refusal fallback, routed by refusal category
+  sample_rows: 20                # sample rows per slice in the prompt
+  max_value_chars: 200           # each value truncated to this length
+  full_table_max_rows: 300       # tables this small are shown in full (lookups)
+  max_slices: 60                 # slices per source per prompt
+  cache: true                    # reuse results for identical requests
+
+budget:
+  max_usd_per_scan: 1.0
+  max_usd_per_month: 20.0
+
+pricing:                         # USD per million tokens
+  claude-haiku-4-5: {input: 1.0, output: 5.0, cache_read: 0.1}
+  claude-sonnet-5-5: {input: 2.0, output: 10.0, cache_read: 0.2}
+  claude-opus-5-5: {input: 4.0, output: 20.0, cache_read: 0.2}
+
 sources:
   nyc_taxi_trips:
     path: data/planted/trips.parquet
@@ -36,8 +64,13 @@ sources:
       # Distances under 0.1 mi count as 0.1 so zero-distance trips still get a rate.
       fare_per_mile: fare_amount / greatest(trip_distance, 0.1)
       tip_ratio: tip_amount / NULLIF(fare_amount, 0)
+    sensitive: []
+    lookups:
+      PULocationID: {source: nyc_taxi_zones, key: LocationID, columns: [Zone, Borough]}
+      DOLocationID: {source: nyc_taxi_zones, key: LocationID, columns: [Zone, Borough]}
 
   nyc_taxi_zones:
     path: data/planted/taxi_zone_lookup.csv
     row_id: LocationID
     categorical: [Borough, service_zone]
+    sensitive: []
