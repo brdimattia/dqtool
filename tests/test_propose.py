@@ -124,6 +124,16 @@ def test_default_yaml_matches_propose_defaults():
     assert data["pricing"] == {k: v.model_dump() for k, v in _default_pricing().items()}
 
 
+def test_pricing_matches_dated_model_names():
+    from dqtool.config import Config
+    from dqtool.propose.engine import Ledger
+
+    ledger = Ledger(Config())
+    assert ledger.price("claude-haiku-4-5-20251001").input == 1.0
+    assert ledger.price("claude-sonnet-5-5").output == 10.0
+    assert ledger.price("some-unknown-model").output == 20.0  # priciest known rate
+
+
 # --- SQL guard ---------------------------------------------------------------
 
 COLUMNS = [

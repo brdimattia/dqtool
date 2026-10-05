@@ -50,10 +50,15 @@ class Ledger:
     skipped: list[dict] = field(default_factory=list)
 
     def price(self, model: str) -> Price:
-        if model in self.config.pricing:
-            return self.config.pricing[model]
+        pricing = self.config.pricing
+        if model in pricing:
+            return pricing[model]
+        # Responses can name a dated snapshot (claude-haiku-4-5-20251001): match by prefix.
+        prefixes = [k for k in pricing if model.startswith(k + "-")]
+        if prefixes:
+            return pricing[max(prefixes, key=len)]
         # Unknown model (for example a refusal fallback): charge at the priciest known rate.
-        return max(self.config.pricing.values(), key=lambda p: p.output)
+        return max(pricing.values(), key=lambda p: p.output)
 
     def cost(self, response: LLMResponse) -> float:
         p = self.price(response.model)
