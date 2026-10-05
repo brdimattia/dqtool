@@ -280,7 +280,7 @@ def propose_source(
 
     hard = [g for g in groups if _needs_escalation(reviews.get(g.slice_id, (None,))[0], g)]
     unsure = [i for i, _ in issues if i.confidence == "low"]
-    if triage is not None and (hard or unsure):
+    if cfg.escalate is not None and triage is not None and (hard or unsure):
         notes = {
             g.slice_id: reviews[g.slice_id][0].model_dump() for g in hard if g.slice_id in reviews
         }

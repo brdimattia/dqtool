@@ -65,8 +65,8 @@ class ProposeConfig(Strict):
         default_factory=lambda: TierConfig(model="claude-haiku-4-5", max_tokens=16000)
     )
     # Mid-tier model reviews only slices triage marks ambiguous or low-confidence, or that
-    # span several columns.
-    escalate: TierConfig = Field(
+    # span several columns. null turns escalation off (single-pass review).
+    escalate: TierConfig | None = Field(
         default_factory=lambda: TierConfig(
             model="claude-sonnet-5-5", max_tokens=32000, effort="medium", fallbacks="default"
         )

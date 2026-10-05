@@ -26,6 +26,7 @@ propose:
     effort: null
     fallbacks: null
   escalate:                      # mid-tier: ambiguous, low-confidence, or multi-column slices
+                                 # (set to null for a single-pass review)
     model: claude-sonnet-5-5
     max_tokens: 32000
     effort: medium

@@ -309,3 +309,9 @@ def test_cli_skips_propose_without_api_key(synthetic_planted, tmp_path, monkeypa
     result = CliRunner().invoke(app, ["scan", str(zones), "--out", str(tmp_path / "runs")])
     assert result.exit_code == 0, result.output
     assert "skipping Propose" in result.output
+
+
+def test_escalation_can_be_turned_off(synthetic_planted, tmp_path):
+    provider = FakeProvider()
+    scan(synthetic_planted, tmp_path, provider, propose__escalate=None)
+    assert [r.model for r in provider.requests] == ["claude-haiku-4-5", "claude-haiku-4-5"]
