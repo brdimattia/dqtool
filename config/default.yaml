@@ -47,6 +47,14 @@ pricing:                         # USD per million tokens
   claude-sonnet-5-5: {input: 2.0, output: 10.0, cache_read: 0.2}
   claude-opus-5-5: {input: 4.0, output: 20.0, cache_read: 0.2}
 
+review:
+  rules_dir: rules               # rule files: rules/<source>/<id>.yaml
+  reports_dir: reports           # HTML reports committed in scan pull requests
+  base_branch: null              # null: the remote's default branch
+  branch_prefix: dqtool/scan-
+  max_feedback: 30               # past approved/rejected rules per source shown to the LLM
+  report_sample_rows: 5          # example rows per finding in the report (0: none)
+
 sources:
   nyc_taxi_trips:
     path: data/planted/trips.parquet

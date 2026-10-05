@@ -9,7 +9,8 @@ from typing import Annotated
 import typer
 
 from dqtool.config import SourceConfig, load_config, load_dotenv
-from dqtool.scan import ScanResult, reprove, run_scan
+from dqtool.report import rules_yaml
+from dqtool.scan import ScanResult, load_run, report_for_run, reprove, run_scan
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 
@@ -44,6 +45,9 @@ def scan(
             help="Run the LLM Propose step (default: propose.enabled in config).",
         ),
     ] = None,
+    pr: Annotated[
+        bool, typer.Option("--pr", help="Open a pull request with the rules and report.")
+    ] = False,
 ) -> None:
     """Pre-ingestion risk scan: profile, detect, and propose rules. Writes runs/<run_id>/."""
     load_dotenv()
@@ -92,6 +96,91 @@ def scan(
     if result.rules is not None:
         print_rules(result.rules, result.results)
     typer.echo(f"\nWrote {result.run_dir}")
+    if pr:
+        if result.rules is None:
+            typer.echo("No rules to review (Propose did not run): no pull request.")
+        else:
+            open_pull_request(result.run_dir)
+
+
+def open_pull_request(run_dir: Path) -> None:
+    from dqtool.report.pr import PRError, open_pr
+
+    run = load_run(run_dir)
+    try:
+        result = open_pr(
+            run["config"],
+            run_dir.name,
+            run["rules"],
+            run["slices"] or [],
+            lambda files: report_for_run(run_dir, files),
+            run["results"],
+            run["cost"],
+        )
+    except PRError as e:
+        typer.echo(f"Could not open a pull request: {e}", err=True)
+        raise typer.Exit(1) from e
+    if result.url is None:
+        typer.echo("No new rules beyond those already in the rule store: no pull request.")
+    else:
+        typer.echo(f"Opened {result.url} ({len(result.files)} rule files, branch {result.branch})")
+
+
+@app.command()
+def pr(
+    run_dir: Annotated[Path, typer.Argument(help="An earlier run directory, e.g. runs/<run_id>.")],
+) -> None:
+    """Open a pull request for an earlier run's surviving rules. No LLM calls."""
+    open_pull_request(run_dir)
+
+
+@app.command()
+def report(
+    run_dir: Annotated[Path, typer.Argument(help="An earlier run directory, e.g. runs/<run_id>.")],
+) -> None:
+    """Rebuild an earlier run's HTML report (runs/<run_id>/report.html)."""
+    path = run_dir / "report.html"
+    path.write_text(report_for_run(run_dir))
+    typer.echo(f"Wrote {path}")
+
+
+@app.command()
+def review(
+    files: Annotated[list[Path], typer.Argument(help="Rule files to decide on.")],
+    approve: Annotated[bool, typer.Option("--approve", help="Approve the rules.")] = False,
+    reject: Annotated[bool, typer.Option("--reject", help="Reject the rules.")] = False,
+    reason: Annotated[str | None, typer.Option(help="Why (required to reject).")] = None,
+) -> None:
+    """Record a review decision in rule files (edits review.decision in place)."""
+    if approve == reject:
+        raise typer.BadParameter("pass exactly one of --approve or --reject")
+    if reject and not reason:
+        raise typer.BadParameter("--reason is required when rejecting; it feeds the next scan")
+    decision = "approve" if approve else "reject"
+    reviewer = rules_yaml.reviewer_name()
+    for path in files:
+        rules_yaml.set_decision(path, decision, reason, reviewer)
+        typer.echo(f"{decision:<8} {path}")
+
+
+@app.command(name="review-stats")
+def review_stats(
+    rules_dir: Annotated[Path, typer.Option(help="Rule store directory.")] = Path("rules"),
+) -> None:
+    """Reviewer precision: approved / (approved + rejected) rules in the rule store."""
+    stats = rules_yaml.precision(rules_dir)
+
+    def line(label: str, c: dict) -> str:
+        p = "-" if c["precision"] is None else f"{c['precision']:.0%}"
+        return (
+            f"  {label:<24} approved {c['approve']:>3}  rejected {c['reject']:>3}"
+            f"  pending {c['pending']:>3}  precision {p}"
+        )
+
+    typer.echo("Reviewer precision (target 70%):")
+    typer.echo(line("all sources", stats["overall"]))
+    for source, c in stats["by_source"].items():
+        typer.echo(line(source, c))
 
 
 @app.command(name="prove")

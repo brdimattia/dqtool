@@ -19,7 +19,7 @@ from dqtool.detect.detectors import Slice
 from dqtool.logging import to_json
 from dqtool.profile.source import Source, quote
 
-PROMPT_VERSION = "v2"
+PROMPT_VERSION = "v3"
 MASK = "<masked>"
 
 
@@ -172,6 +172,7 @@ def render(
     cfg: ProposeConfig,
     first_pass: dict[str, dict] | None = None,
     candidate_issues: list[dict] | None = None,
+    history: dict | None = None,
 ) -> str:
     max_chars = cfg.max_value_chars
     out = [
@@ -187,6 +188,16 @@ def render(
             f" {time_range['end']}; rows per period: {json.dumps(time_range['periods'])}"
         )
     out.append("</profile>")
+
+    if history and (history["approved"] or history["rejected"]):
+        out.append("\n<review_history>")
+        if history["approved"]:
+            out.append("Approved rules:")
+            out.append(data_rows(history["approved"], 2000))
+        if history["rejected"]:
+            out.append("Rejected rules, with the reviewer's reason:")
+            out.append(data_rows(history["rejected"], 2000))
+        out.append("</review_history>")
 
     if groups:
         out.append(f"\n{len(groups)} slice(s) to review:")

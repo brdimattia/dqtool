@@ -12,7 +12,7 @@ from typer.testing import CliRunner
 
 from dqtool.cli import app
 from dqtool.config import BudgetConfig, ProposeConfig, TierConfig, _default_pricing
-from dqtool.propose.prompt import data_rows, escape
+from dqtool.propose.prompt import PROMPT_VERSION, data_rows, escape
 from dqtool.propose.providers.base import LLMRequest, LLMResponse
 from dqtool.safety.sql_guard import check_predicate
 from dqtool.scan import run_scan
@@ -250,7 +250,7 @@ def test_triage_then_escalation(synthetic_planted, tmp_path):
     assert by_id["zone-typo"]["status"] == "proposed"
     assert by_id["bad"]["status"] == "rejected_by_sql_guard"
     for rule in trips["rules"] + zones["rules"]:
-        assert rule["provenance"]["prompt_version"] == "v2"
+        assert rule["provenance"]["prompt_version"] == PROMPT_VERSION
         assert rule["max_violation_rate"] == 0.01
 
     files = {p.name for p in result.run_dir.iterdir()}

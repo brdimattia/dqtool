@@ -119,10 +119,19 @@ Findings:
 
 ### Step 5: Review
 
-- [ ] Rule YAML writer (spec rule format)
-- [ ] Feedback memory: rejected rules and reasons fed into the next prompt
-- [ ] Static HTML report with summary, findings, and rules layers
-- [ ] Pull request opened per scan
+- [x] Rule YAML files (`rules/<source>/<id>.yaml`, spec format plus a `review` block and
+      backtest evidence); duplicates of stored rules skipped
+- [x] Static HTML report: summary (risk level, top issues, what is missing), findings
+      (counts, reasoning, example rows), rules (SQL, backtest, provenance), and an appendix
+      (dropped rules, slices judged legitimate, all slices, cost, evaluation)
+- [x] Pull request per scan (`dqtool scan --pr`, or `dqtool pr RUN_DIR`): rule files and
+      report on a new branch, built in a temporary worktree so the checkout is untouched
+- [x] Review helpers: `dqtool review FILE --approve | --reject --reason`, and
+      `dqtool review-stats` for reviewer precision (target 70%)
+- [x] Feedback memory (prompt v3): the 30 most recent approved and rejected rules per
+      source, with rejection reasons, go into the next scan's prompt
+- [ ] First real review: decide on the rules in the first scan PR, then rescan to check
+      that the rejections change what gets proposed
 
 ### Open questions
 
@@ -134,6 +143,10 @@ Findings:
 - [ ] Common real errors vs the noise threshold: a correct rule like `fare_amount < 0`
       (4.8% of rows) would be dropped. Decide whether such rules are dropped, kept as
       `warn`, or split (detector backlog).
+- [x] Report hosting: committed under `reports/` in each scan's pull request (no hosting
+      needed; download and open). Revisit if reports get large or reviewers want links.
+- [x] Sensitive columns before classification exists: a `sensitive` list per source in
+      config, masked in prompts, logs, and report example rows.
 - [ ] Planted negative fares are invisible to sample-based review (107 among 535k real
       refunds). Either split slices by signature or make the plant distinguishable.
 

@@ -136,12 +136,27 @@ class SourceConfig(Strict):
     lookups: dict[str, LookupConfig] = Field(default_factory=dict)
 
 
+class ReviewConfig(Strict):
+    # Rule files live here: rules/<source>/<id>.yaml. Approved ones are the baseline.
+    rules_dir: Path = Path("rules")
+    # Reports are committed here in each scan's pull request.
+    reports_dir: Path = Path("reports")
+    # Branch for scan pull requests; null means the remote's default branch.
+    base_branch: str | None = None
+    branch_prefix: str = "dqtool/scan-"
+    # Past approved and rejected rules per source shown to the LLM (feedback memory).
+    max_feedback: int = 30
+    # Example rows per finding in the HTML report (0 leaves data rows out of the report).
+    report_sample_rows: int = 5
+
+
 class Config(Strict):
     detect: DetectConfig = Field(default_factory=DetectConfig)
     prove: ProveConfig = Field(default_factory=ProveConfig)
     propose: ProposeConfig = Field(default_factory=ProposeConfig)
     budget: BudgetConfig = Field(default_factory=BudgetConfig)
     pricing: dict[str, Price] = Field(default_factory=_default_pricing)
+    review: ReviewConfig = Field(default_factory=ReviewConfig)
     sources: dict[str, SourceConfig] = Field(default_factory=dict)
 
 

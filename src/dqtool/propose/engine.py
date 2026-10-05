@@ -32,6 +32,7 @@ from dqtool.propose.prompt import (
 )
 from dqtool.propose.providers.base import LLMRequest, LLMResponse, Provider
 from dqtool.propose.schema import ReviewOutput, SliceReview
+from dqtool.report.rules_yaml import review_history
 from dqtool.safety.sql_guard import check_predicate
 
 
@@ -266,8 +267,11 @@ def propose_source(
             fallbacks=tier.fallbacks,
         )
 
+    history = review_history(config.review.rules_dir, source.name, config.review.max_feedback)
     triage = caller.call(
-        request(cfg.triage, render(source, profile, groups, reader, cfg)), source.name, "triage"
+        request(cfg.triage, render(source, profile, groups, reader, cfg, history=history)),
+        source.name,
+        "triage",
     )
     by_id = {g.slice_id: g for g in groups}
     reviews: dict[str, tuple[SliceReview, str]] = {}
@@ -292,6 +296,7 @@ def propose_source(
             cfg,
             first_pass=notes,
             candidate_issues=[i.model_dump() for i in unsure],
+            history=history,
         )
         second = caller.call(request(cfg.escalate, prompt), source.name, "escalate")
         result["escalated"] = [g.slice_id for g in hard]

@@ -29,6 +29,7 @@ from dqtool.propose.providers.base import Provider
 from dqtool.prove.backtest import prove
 from dqtool.prove.coverage import coverage
 from dqtool.prove.score import score
+from dqtool.report.html import build_report
 
 
 @dataclass
@@ -144,6 +145,7 @@ def run_scan(
         result.rules, result.results = prove_and_score(
             config, run_dir, result.proposals, profiles, result.cost, manifest, log, out_dir
         )
+        (run_dir / "report.html").write_text(report_for_run(run_dir))
     log.event("run_end", slices=len(slices))
     return result
 
@@ -212,4 +214,31 @@ def reprove(run_dir: Path, manifest_path: Path | None) -> tuple[list[dict], dict
     log.event("reprove_start", manifest=str(manifest_path) if manifest_path else None)
     return prove_and_score(
         config, run_dir, proposals, profiles, cost, manifest, log, run_dir.parent
+    )
+
+
+def load_run(run_dir: Path) -> dict:
+    """An earlier run's outputs, by file stem (config, profile, slices, proposals, ...)."""
+    out = {}
+    for name in ("config", "profile", "slices", "proposals", "rules", "results", "cost"):
+        path = run_dir / f"{name}.json"
+        out[name] = json.loads(path.read_text()) if path.exists() else None
+    out["config"] = Config.model_validate(out["config"]) if out["config"] else load_config()
+    return out
+
+
+def report_for_run(run_dir: Path, rule_files: dict[str, str] | None = None) -> str:
+    run = load_run(run_dir)
+    if run["rules"] is None:
+        raise FileNotFoundError(f"{run_dir} has no rules.json; run a scan with Propose first")
+    return build_report(
+        run["config"],
+        run_dir.name,
+        run["profile"],
+        run["slices"] or [],
+        run["proposals"],
+        run["rules"],
+        run["results"],
+        run["cost"],
+        rule_files,
     )
