@@ -1,0 +1,27 @@
+id: zone-placeholder-borough
+source: nyc_taxi_zones
+description: Borough is a placeholder value ('Unknown' or 'N/A') rather than a real borough.
+violation_when: '"Borough" IN (''Unknown'',''N/A'')'
+severity: warn
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 0.007547169811320755
+  backtest_violation_count: 2
+  kind: row
+  sample_row_ids:
+  - 265
+  - 264
+  slice_ids: []
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: low
+  reasoning: Row 264 has Borough 'Unknown' and Zone 'N/A'. Row 265 has Borough 'N/A' and Zone 'Outside
+    of NYC'. These are placeholder rows with inconsistent null encodings.
+  approved_by: null

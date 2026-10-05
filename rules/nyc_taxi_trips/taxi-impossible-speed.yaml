@@ -1,0 +1,46 @@
+id: taxi-impossible-speed
+source: nyc_taxi_trips
+description: Implied speed above 100 mph is physically impossible for a NYC taxi trip.
+violation_when: implied_mph > 100 AND duration_hours > 0
+severity: error
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 0.0003447036111543231
+  backtest_violation_count: 3860
+  kind: row
+  sample_row_ids:
+  - 1154987
+  - 10505102
+  - 8736663
+  - 4108464
+  - 10534032
+  - 6469322
+  - 10192300
+  - 7356016
+  - 2244003
+  - 2825644
+  - 7741457
+  - 7908484
+  - 7186068
+  - 9764292
+  - 7721127
+  - 3120914
+  - 9370430
+  - 1876296
+  - 10106865
+  - 3826355
+  slice_ids:
+  - nyc_taxi_trips.robust_outlier.implied_mph.high
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: high
+  reasoning: Speeds of hundreds to thousands of mph come from multi-mile trips lasting seconds, or from
+    distances of 89,632-124,127 miles; physically impossible.
+  approved_by: null

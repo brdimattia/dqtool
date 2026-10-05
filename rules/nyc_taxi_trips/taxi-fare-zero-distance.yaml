@@ -1,0 +1,46 @@
+id: taxi-fare-zero-distance
+source: nyc_taxi_trips
+description: Meaningful fare on a zero-distance trip lasting over 5 minutes is contradictory.
+violation_when: trip_distance = 0 AND fare_amount > 20 AND duration_hours > 0.083
+severity: warn
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 0.005594736072232731
+  backtest_violation_count: 62650
+  kind: row
+  sample_row_ids:
+  - 3248376
+  - 3078029
+  - 6776123
+  - 6973079
+  - 2004621
+  - 11038280
+  - 11065144
+  - 10422915
+  - 3456476
+  - 10681449
+  - 10827792
+  - 10852527
+  - 10619537
+  - 7038714
+  - 7033706
+  - 5229442
+  - 6975990
+  - 6641330
+  - 10803732
+  - 3142395
+  slice_ids:
+  - nyc_taxi_trips.robust_outlier.fare_per_mile.high
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: medium
+  reasoning: Large fares (16-635) on zero-distance trips, many with null passenger_count and payment_type
+    0, are contradictory with a zero-mile trip lasting a long time.
+  approved_by: null

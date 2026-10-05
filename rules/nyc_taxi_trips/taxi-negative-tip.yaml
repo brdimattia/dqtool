@@ -1,0 +1,46 @@
+id: taxi-negative-tip
+source: nyc_taxi_trips
+description: Negative tip amount is not a valid tip.
+violation_when: tip_amount < 0
+severity: warn
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 3.214852332009231e-05
+  backtest_violation_count: 360
+  kind: row
+  sample_row_ids:
+  - 1922900
+  - 7739929
+  - 5133753
+  - 7271171
+  - 1302685
+  - 2057763
+  - 4253081
+  - 9574991
+  - 5341785
+  - 9520075
+  - 4509093
+  - 3688915
+  - 8472949
+  - 1853784
+  - 982418
+  - 8556185
+  - 1000542
+  - 1860480
+  - 1218857
+  - 2460076
+  slice_ids:
+  - nyc_taxi_trips.negative_values.tip_amount
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: low
+  reasoning: Negative tips occur on reversed/disputed trips with negated fares, but a tip should not be
+    negative otherwise; only 360 rows.
+  approved_by: null

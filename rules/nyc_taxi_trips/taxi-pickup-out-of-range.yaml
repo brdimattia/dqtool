@@ -1,0 +1,46 @@
+id: taxi-pickup-out-of-range
+source: nyc_taxi_trips
+description: Pickup date outside Jan-Mar 2025 collection window.
+violation_when: tpep_pickup_datetime < TIMESTAMP '2025-01-01' OR tpep_pickup_datetime >= TIMESTAMP '2025-04-01'
+severity: error
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 2.1343047426394618e-05
+  backtest_violation_count: 239
+  kind: row
+  sample_row_ids:
+  - 4180854
+  - 9990033
+  - 10280574
+  - 1221855
+  - 10523382
+  - 2815035
+  - 3344718
+  - 10255476
+  - 3585315
+  - 4652513
+  - 1422634
+  - 3942
+  - 10565710
+  - 4002121
+  - 7801976
+  - 4107777
+  - 7890440
+  - 1921543
+  - 10698184
+  - 7132770
+  slice_ids:
+  - nyc_taxi_trips.time_out_of_range.tpep_pickup_datetime
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: high
+  reasoning: Pickups dated 2031 (214 rows) and 2024-12-31 are outside the collection period, and future
+    dates are impossible.
+  approved_by: null

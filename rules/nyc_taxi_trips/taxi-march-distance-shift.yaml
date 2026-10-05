@@ -1,0 +1,50 @@
+id: taxi-march-distance-shift
+source: nyc_taxi_trips
+description: March trips show a doubled median distance unexplained by fares, so the period needs review.
+violation_when: tpep_pickup_datetime >= TIMESTAMP '2025-03-01' AND tpep_pickup_datetime < TIMESTAMP '2025-04-01'
+  AND trip_distance > 3.6 AND fare_per_mile < 3.6 AND fare_amount > 0
+severity: warn
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 0.1406342510724658
+  backtest_violation_count: 1574826
+  kind: period
+  sample_row_ids:
+  - 11100946
+  - 7783385
+  - 7413155
+  - 10862496
+  - 9450929
+  - 7115767
+  - 9399617
+  - 8271118
+  - 8026503
+  - 10357582
+  - 7343714
+  - 11161195
+  - 10854996
+  - 9394281
+  - 10557991
+  - 7224045
+  - 7873272
+  - 8540728
+  - 7507623
+  - 9430360
+  slice_ids:
+  - nyc_taxi_trips.drift_median.trip_distance.2025-03-01
+  - nyc_taxi_trips.drift_median.implied_mph.2025-03-01
+  - nyc_taxi_trips.drift_median.fare_per_mile.2025-03-01
+  run_id: 20261005T024030Z-b80d4cde
+  period: '2025-03-01'
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: medium
+  reasoning: March median trip distance 3.6 vs 1.7 in Jan/Feb, with implied_mph doubling and fare_per_mile
+    halving, shows a whole-period shift without any explanation.
+  approved_by: null

@@ -1,0 +1,27 @@
+id: taxi-invalid-congestion-surcharge
+source: nyc_taxi_trips
+description: Congestion surcharge of 1.0 is not a valid value.
+violation_when: congestion_surcharge = 1.0
+severity: warn
+max_violation_rate: 0.01
+review:
+  decision: pending
+  reason: null
+  reviewed_by: null
+evidence:
+  backtest_violation_rate: 8.930145366692308e-08
+  backtest_violation_count: 1
+  kind: row
+  sample_row_ids:
+  - 10081894
+  slice_ids:
+  - nyc_taxi_trips.rare_values.congestion_surcharge
+  run_id: 20261005T024030Z-b80d4cde
+provenance:
+  proposed_by: llm
+  model: claude-sonnet-5-5
+  prompt_version: v2
+  confidence: medium
+  reasoning: Single row has congestion_surcharge 1.0 and mta_tax 3.25, which suggests shifted columns;
+    1.0 is not a valid surcharge.
+  approved_by: null
