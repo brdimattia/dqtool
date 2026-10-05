@@ -1,1 +1,43 @@
-# Thresholds, budgets, and model tiers. Populated from Phase 0 step 2 onward.
+# Thresholds, budgets, and sources. Every value is tunable; see src/dqtool/config.py
+# for what each one means. Paths are relative to the directory dqtool runs from.
+
+detect:
+  mad_threshold: 3.5             # modified z-score cutoff (0.6745 * |x - median| / MAD)
+  skew_ratio: 3.0                # (p99 - p50) > ratio * (p50 - p01) -> log-scale upper bound
+  categorical_max_distinct: 50   # numeric columns with fewer distinct values are categorical
+  rare_value_share: 0.0001       # categorical values rarer than this are flagged
+  dominant_value_share: 0.95     # one value this common -> other values are flagged
+  negative_max_share: 0.10       # negatives flagged when at most this share of a column
+  order_min_share: 0.99          # a <= b holding this often is treated as expected
+  min_period_share: 0.01         # periods smaller than this are outside the main time range
+  drift_relative_change: 0.25    # period median vs other periods' median
+  drift_null_rate_change: 0.05   # period null rate vs other periods' null rate
+  sample_rows: 20                # evidence row_ids kept per slice
+
+prove:
+  max_violation_rate: 0.01       # rules flagging more than this are dropped as noisy (step 4)
+
+sources:
+  nyc_taxi_trips:
+    path: data/planted/trips.parquet
+    row_id: row_id
+    time_column: tpep_pickup_datetime
+    period: month
+    categorical: [VendorID, RatecodeID, PULocationID, DOLocationID, payment_type,
+                  store_and_fwd_flag]
+    comparable:
+      - [fare_amount, tip_amount, tolls_amount, total_amount]
+    derived:
+      duration_hours: >-
+        date_diff('second', tpep_pickup_datetime, tpep_dropoff_datetime) / 3600.0
+      implied_mph: >-
+        trip_distance / NULLIF(date_diff('second', tpep_pickup_datetime,
+        tpep_dropoff_datetime) / 3600.0, 0)
+      # Distances under 0.1 mi count as 0.1 so zero-distance trips still get a rate.
+      fare_per_mile: fare_amount / greatest(trip_distance, 0.1)
+      tip_ratio: tip_amount / NULLIF(fare_amount, 0)
+
+  nyc_taxi_zones:
+    path: data/planted/taxi_zone_lookup.csv
+    row_id: LocationID
+    categorical: [Borough, service_zone]
